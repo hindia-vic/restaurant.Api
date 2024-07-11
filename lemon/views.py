@@ -10,6 +10,7 @@ from django.core.paginator import Paginator,EmptyPage
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes,throttle_classes
 from rest_framework.throttling import AnonRateThrottle,UserRateThrottle
+from .throtters import TenCallsPerMinute
 
 @api_view(['GET','POST'])
 def itemlist(request):
@@ -68,6 +69,17 @@ def managerview(request):
 def throttle_check(request):
     return Response({'message':"some secret message"})
 
+@api_view()
+@permission_classes([IsAuthenticated])
+@throttle_classes([UserRateThrottle])
+def throttle_check_auth(request):
+    return Response({'message':"some secret message"})
+
+@api_view()
+@permission_classes([IsAuthenticated])
+@throttle_classes([TenCallsPerMinute])
+def throttle_check_ten(request):
+    return Response({'message':"some secret message"})
 
 """class Menuview(generics.ListCreateAPIView):
     queryset=MenuItem.objects.all()
