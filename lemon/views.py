@@ -11,6 +11,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes,throttle_classes
 from rest_framework.throttling import AnonRateThrottle,UserRateThrottle
 from .throtters import TenCallsPerMinute
+from rest_framework.permissions import IsAdminUser
+from django.contrib.auth.models import User,Group
 
 @api_view(['GET','POST'])
 def itemlist(request):
@@ -80,6 +82,25 @@ def throttle_check_auth(request):
 @throttle_classes([TenCallsPerMinute])
 def throttle_check_ten(request):
     return Response({'message':"some secret message"})
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def managerview(request):
+    username=request.data['username']
+    if username:
+        user=get_object_or_404(User,username=username)
+        managers=Group.objects.get(name='managers')
+        if request.method=='POST':
+          managers.user_set.add(user)
+        elif request.method=='DELETE':
+            managers.user_set.remove(user)
+        return  Response({"message":"ok"})
+    return Response({"message":"error"},status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
 
 """class Menuview(generics.ListCreateAPIView):
     queryset=MenuItem.objects.all()
